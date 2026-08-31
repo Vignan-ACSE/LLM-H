@@ -72,6 +72,11 @@ For your research projects, I'd especially prioritize **`configs/`, `scripts/`, 
 1. [[1hr Talk] Intro to Large Language Models](https://youtu.be/zjkBMFhNj_g?si=A06tQlmpfvOwuW8s) - By the founding member of OpenAI **andrej karpathy**
 2. [PPT of the above talk](https://drive.google.com/file/d/1pxx_ZI7O-Nwl7ZLNk5hI3WzAsTLwvNU7/view)
 
+**Reference**
+1. LLM Visualization - [website](https://bbycroft.net/llm)
+2. Transformer Explainer - [website](https://poloclub.github.io/transformer-explainer/)
+3. TikTokenizer - [website](https://tiktokenizer.vercel.app/)
+
 ### 2.2 Types of Hallucinations
 #### 1. Intrinsic Hallucination
 
@@ -138,5 +143,11 @@ LLM - Hallucinations under Information and Cost Constraints
    
 3. Semantic Entropy based or SelfCheckGPT
    Cascading architecture with semantic entropy or use SelfCheckGPT
+
+### Topics to discuss
+1. overview of transformers, generative modelling, pytorch etc.
+2. LLM Ecosystem and Infrastructure
+3. LLM Inference (cpu, gpu, memory hierarchy, inference engines etc.)
+4. Project setup and working overviews.
 
 ## 4. Publication

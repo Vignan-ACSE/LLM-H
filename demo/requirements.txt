@@ -1,0 +1,12 @@
+# use python=3.14
+
+transformers
+streamlit
+numpy
+pandas
+matplotlib
+torch
+ipykernal
+seaborn
+scipy
+scikit-learn
