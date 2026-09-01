@@ -131,17 +131,20 @@ One important point: **factual, mathematical, code, citation, and other categori
 LLM - Hallucinations under Information and Cost Constraints
 
 ### 3.1 Main goals of this project
-1. **Single Pass Extraction**
+1. **Single Pass Extraction:**
+
    Every Pytorch Class will have a forward method and sample method.
    Pick 2-3 LLMs with Open weights and try extracting (log prob, mean token, variance of log prob, total token entropy)
    Study using stats & prob all the metrics to find the hallucinations.
 
-2. **The Calibrated Router**
+3. **The Calibrated Router:**
+
    Use a classifier (scikit-learn, Decision Trees, RF) to train a model on log prob combined with linguestic features.
    This classifier will be acting as judge or guessing the hallucination before they generate using log prob.
    This router ouputs.
 
-3. **Semantic Entropy based or SelfCheckGPT**
+4. **Semantic Entropy based or SelfCheckGPT:**
+
    Cascading architecture with semantic entropy or use SelfCheckGPT
 
 ### 3.2 Topics to discuss
