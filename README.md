@@ -153,4 +153,9 @@ LLM - Hallucinations under Information and Cost Constraints
 3. LLM Inference (cpu, gpu, memory hierarchy, inference engines etc.)
 4. Project setup and working overviews.
 
+### Sep 1:
+- Discussion on demo for 08/09/26
+- Project Repo setup
+- Topic 1 and 4 from #3.2
+
 ## 4. Publication

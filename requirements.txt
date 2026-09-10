@@ -6,7 +6,7 @@ numpy
 pandas
 matplotlib
 torch
-ipykernal
+ipykernel
 seaborn
 scipy
 scikit-learn
