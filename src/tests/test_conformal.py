@@ -118,12 +118,20 @@ def test_ties_are_conservative():
 
 def test_recall_converges_to_target_as_n_grows():
     alpha = 0.05
-    gaps = []
-    for n in (19, 99, 499):
+    overshoots = []
+    for n in (10, 20, 100, 1000):
         expected = 1 - _expected_k(n, alpha) / (n + 1)
-        gaps.append(abs(expected - (1 - alpha)))
-    assert gaps[0] >= gaps[1] >= gaps[2]
-    assert gaps[-1] < 0.002
+        got = _mean_recall(
+            lambda rng, size: rng.normal(0, 1, size),
+            n,
+            alpha,
+            trials=1500,
+            m=1000,
+        )
+        assert abs(got - expected) < 0.015, (n, expected, got)
+        assert got >= 1 - alpha - 0.01, (n, got)
+        overshoots.append(got - (1 - alpha))
+    assert overshoots[-1] < overshoots[0], overshoots
 
 
 #input validation 
