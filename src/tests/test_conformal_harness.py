@@ -1,4 +1,5 @@
-"""C2 - synthetic test harness for src/calibration/conformal.py.
+"""
+C2 - synthetic test harness for src/calibration/conformal.py.
 
 Workbook C2: scores with a known, controllable relationship to labels; assert
 that empirical coverage (recall) converges to the target as calibration size
@@ -54,8 +55,7 @@ def run_trials(n_cal, pos_rate, separation, trials=600, n_test=3000, seed=0):
     return recalls.mean(), flag_rates.mean()
 
 
-# ---------- the generator itself ----------
-
+# the generator itself
 def test_generator_dials_do_what_they_say():
     rng = np.random.default_rng(0)
     scores, labels = make_labeled_scores(rng, 20000, pos_rate=0.89, separation=2.0)
@@ -67,7 +67,7 @@ def test_generator_dials_do_what_they_say():
     assert abs(gap0) < 0.1                            # separation 0 = no signal
 
 
-# ---------- coverage converges to the target as calibration size grows ----------
+# coverage converges to the target as calibration size grows
 
 @pytest.mark.parametrize("separation", [0.5, 1.5, 3.0], ids=["weak", "medium", "strong"])
 def test_recall_reaches_target_and_converges(separation):
@@ -85,8 +85,7 @@ def test_recall_reaches_target_and_converges(separation):
     assert overshoot[-1] < 0.002, (separation, overshoot)
 
 
-# ---------- the guarantee does not depend on how good the score is ----------
-
+# the guarantee does not depend on how good the score is
 def test_useless_score_still_reaches_target_but_flags_almost_everything():
     recall, flag_rate = run_trials(2000, pos_rate=0.89, separation=0.0)
     assert recall >= TARGET - TOL
@@ -104,8 +103,7 @@ def test_good_score_flags_fewer_answers_at_the_same_recall():
     assert useless_flags - good_flags > 0.05          # same recall, fewer flags
 
 
-# ---------- the guarantee does not depend on the share of hallucinations ----------
-
+# the guarantee does not depend on the share of hallucinations
 @pytest.mark.parametrize("pos_rate", [0.89, 0.5, 0.3, 0.1])
 def test_recall_holds_for_any_hallucination_rate(pos_rate):
     n_cal = 1000
