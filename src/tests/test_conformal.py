@@ -1,4 +1,5 @@
-"""synthetic tests for src/calibration/conformal.py.
+"""
+synthetic tests for src/calibration/conformal.py.
 
 Scores here have a known, controllable relationship to the labels, so the
 recall guarantee can be checked without touching any real data. These must
@@ -82,7 +83,6 @@ def test_higher_score_means_riskier_orientation():
 
 
 # the guarantee itself 
-
 @pytest.mark.parametrize("n", [19, 50, 100, 500])
 def test_mean_recall_matches_one_minus_k_over_n_plus_1(n):
     alpha = 0.05
@@ -118,16 +118,23 @@ def test_ties_are_conservative():
 
 def test_recall_converges_to_target_as_n_grows():
     alpha = 0.05
-    gaps = []
-    for n in (19, 99, 499):
+    overshoots = []
+    for n in (10, 20, 100, 1000):
         expected = 1 - _expected_k(n, alpha) / (n + 1)
-        gaps.append(abs(expected - (1 - alpha)))
-    assert gaps[0] >= gaps[1] >= gaps[2]
-    assert gaps[-1] < 0.002
+        got = _mean_recall(
+            lambda rng, size: rng.normal(0, 1, size),
+            n,
+            alpha,
+            trials=1500,
+            m=1000,
+        )
+        assert abs(got - expected) < 0.015, (n, expected, got)
+        assert got >= 1 - alpha - 0.01, (n, got)
+        overshoots.append(got - (1 - alpha))
+    assert overshoots[-1] < overshoots[0], overshoots
 
 
 #input validation 
-
 def test_rejects_bad_alpha():
     s, y = np.array([0.1, 0.2, 0.3]), np.array([1, 1, 0])
     for bad in (0.0, 1.0, -0.1, 1.5):
