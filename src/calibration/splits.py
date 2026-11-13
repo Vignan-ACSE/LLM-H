@@ -1,4 +1,5 @@
-"""C3 - splitting utilities for conformal calibration.
+"""
+C3 - splitting utilities for conformal calibration.
 
 Splits a labelled frame into three parts:
 
@@ -49,10 +50,8 @@ class SplitLeakageError(AssertionError):
     """Raised when two parts share a row, a norm_key, a group or a near-copy."""
 
 
-# ---------------------------------------------------------------------------
-# near-duplicate detection
-# ---------------------------------------------------------------------------
 
+# near-duplicate detection
 def find_near_duplicates(texts, threshold: float = 0.9, chunk_size: int = 1000,
                          max_df: float = 0.5):
     """Return an (m, 2) int array of index pairs (i < j) whose TF-IDF cosine
@@ -114,10 +113,7 @@ class _UnionFind:
             self.parent[max(ra, rb)] = min(ra, rb)
 
 
-# ---------------------------------------------------------------------------
 # the split
-# ---------------------------------------------------------------------------
-
 def _check_frame(frame, uid_col, group_col, stratify_col, label_col, text_col,
                  need_text):
     needed = [uid_col, group_col, stratify_col, label_col]
@@ -187,12 +183,13 @@ def make_splits(
     out = frame.reset_index(drop=True).copy()
     out[label_col] = out[label_col].astype(int)
 
-    # 1) groups: exact duplicates share a norm_key ...
+    # groups: exact duplicates share a norm_key ...
     codes, _ = pd.factorize(out[group_col])
     n_groups_exact = int(codes.max()) + 1
     union = _UnionFind(n_groups_exact)
     n_pairs = 0
-    # 2) ... and near-duplicate prompts are merged into the same group
+    
+    # and near-duplicate prompts are merged into the same group
     if near_dup:
         pairs = find_near_duplicates(out[text_col], threshold=sim_threshold)
         n_pairs = len(pairs)
@@ -209,7 +206,7 @@ def make_splits(
             f"chained unrelated rows together (or {text_col!r} is not the text "
             f"that distinguishes examples). Raise sim_threshold or check the column.")
 
-    # 3) assign whole groups to folds, stratified on subset x label
+    # assign whole groups to folds, stratified on subset x label
     from sklearn.model_selection import StratifiedGroupKFold
 
     strat = out[stratify_col].astype(str) + "|" + out[label_col].astype(str)
@@ -252,10 +249,8 @@ def make_splits(
     return out, info
 
 
-# ---------------------------------------------------------------------------
-# leakage checks and reporting
-# ---------------------------------------------------------------------------
 
+# leakage checks and reporting
 def assert_no_leakage(
     frame: pd.DataFrame,
     *,
