@@ -82,3 +82,17 @@ def test_summarize_trials():
     assert row["mean_recall"] == pytest.approx(0.9)
     assert row["frac_below_target"] == pytest.approx(0.5)
     assert row["mean_coverage_gap"] == pytest.approx(0.0)
+
+
+def test_summarize_trials_can_group_by_target():
+    trials = pd.DataFrame({
+        "score": ["a"] * 4,
+        "target_recall": [0.9, 0.9, 0.95, 0.95],
+        "recall": [0.85, 0.95, 0.96, 0.94],
+        "flag_rate": [0.5] * 4,
+        "accepted_hallucination_rate": [0.1] * 4,
+        "n_cal_pos": [100] * 4,
+    })
+    summary = summarize_trials(trials, ["score", "target_recall"])
+    assert summary["target_recall"].tolist() == [0.9, 0.95]
+    assert summary["mean_coverage_gap"].tolist() == pytest.approx([0.0, 0.0])

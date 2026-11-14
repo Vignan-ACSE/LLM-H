@@ -100,9 +100,10 @@ def summarize_trials(trials: pd.DataFrame, by: list[str]) -> pd.DataFrame:
     below target_recall is the real warning sign.
     """
     frame = trials.assign(below=trials["recall"] < trials["target_recall"] - 1e-12)
+    target = {} if "target_recall" in by else {"target_recall": ("target_recall", "first")}
     summary = frame.groupby(by, sort=False).agg(
         trials=("recall", "size"),
-        target_recall=("target_recall", "first"),
+        **target,
         mean_recall=("recall", "mean"),
         sd_recall=("recall", "std"),
         min_recall=("recall", "min"),
@@ -110,6 +111,6 @@ def summarize_trials(trials: pd.DataFrame, by: list[str]) -> pd.DataFrame:
         mean_flag_rate=("flag_rate", "mean"),
         mean_accepted_hallucination_rate=("accepted_hallucination_rate", "mean"),
         mean_n_cal_pos=("n_cal_pos", "mean"),
-    )
+    ).reset_index()
     summary["mean_coverage_gap"] = summary["mean_recall"] - summary["target_recall"]
-    return summary.reset_index()
+    return summary
