@@ -7,18 +7,18 @@ most 4 submitted (running + pending) jobs per user:
 
 | Job | File | GPU | Writes to |
 |---|---|---|---|
-| labels + B6 | `slurm/labels_b6.sbatch` | yes | `data/processed/generation_labels.parquet`, `data/b6/` |
-| B3 | `slurm/b3.sbatch` | yes | output cells of `notebooks/b3_selfcheckgpt.ipynb` |
-| B4 | `slurm/b4.sbatch` | yes | `data/b4/` |
-| B5 (extract + train) | `slurm/b5.sbatch` | yes | `data/b5/` |
+| labels + B6 | `slurm/labels_b6.sh` | yes | `data/processed/generation_labels.parquet`, `data/b6/` |
+| B3 | `slurm/b3.sh` | yes | output cells of `notebooks/b3_selfcheckgpt.ipynb` |
+| B4 | `slurm/b4.sh` | yes | `data/b4/` |
+| B5 (extract + train) | `slurm/b5.sh` | yes | `data/b5/` |
 
 ```
 labels_b6 ──┬── b3 (notebook)
             └── b4 ──── b5
 ```
 
-Single-step files for resubmitting just one piece: `labels.sbatch`, `b6.sbatch`,
-`b5_extract.sbatch`, `b5_train.sbatch`.
+Single-step files for resubmitting just one piece: `labels.sh`, `b6.sh`,
+`b5_extract.sh`, `b5_train.sh`.
 
 ---
 
@@ -46,9 +46,9 @@ Download the NLI / BERTScore models. The login node has internet; compute nodes 
 ```bash
 python scripts/download_signal_models.py
 ```
-If the A3 token features are still only zipped, unzip them. The B3 grey-box baselines need them:
+If `data/a3/token_features/` is empty, rerun A3 (about 7 minutes on a GPU). The B3 grey-box baselines need it:
 ```bash
-unzip -n data/a3/token_features.zip -d data/a3/
+python src/extract_features/extract_token_features.py
 ```
 Optional: run the unit tests (pure Python, no models, takes seconds):
 ```bash
@@ -94,16 +94,16 @@ the shards the test run already wrote.
 
 Submit from the repo root, since the jobs use it as their working directory:
 ```bash
-cd /users/staff/pranith/LLM_Hallucinations && sbatch slurm/b4.sbatch
+cd /users/staff/pranith/LLM_Hallucinations && sbatch slurm/b4.sh
 ```
 - **B4 / B5-extract hit the 24 h limit:** resubmit the same file. They resume from their shards.
 - **A step failed:** jobs that depended on it are cancelled automatically. Fix the problem, resubmit that step, then resubmit its dependents. To chain them by hand:
 ```bash
-sbatch --dependency=afterok:<JOBID> slurm/b5.sbatch
+sbatch --dependency=afterok:<JOBID> slurm/b5.sh
 ```
 - **Test mode for a single step:**
 ```bash
-sbatch --export=ALL,LIMIT=50 slurm/b4.sbatch
+sbatch --export=ALL,LIMIT=50 slurm/b4.sh
 ```
 - **Cancel everything:**
 ```bash

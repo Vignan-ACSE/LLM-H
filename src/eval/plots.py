@@ -147,12 +147,16 @@ def rejection_panel(ax, curves: dict[str, np.ndarray], labels: np.ndarray, color
 
 def metric_bars(ax, table, metric: str = "auroc", colors: ColorMap | None = None,
                 ci: tuple[str, str] | None = ("auroc_ci_low", "auroc_ci_high"),
-                chance: float | None = 0.5):
+                chance: float | None = 0.5, order: list[str] | None = None):
     """
     Horizontal bars, one per row of `table` (needs columns 'score' and
-    `metric`), sorted best-first, value printed at the bar end.
+    `metric`), sorted best-first unless `order` fixes the rows bottom to
+    top, value printed at the bar end.
     """
-    table = table.sort_values(metric, ascending=True)
+    if order is None:
+        table = table.sort_values(metric, ascending=True)
+    else:
+        table = table.set_index("score").reindex(order).reset_index()
     y = np.arange(len(table))
     color = [colors[n] if colors else PALETTE[0] for n in table["score"]]
     ax.barh(y, table[metric], color=color, height=0.62, edgecolor=SURFACE, linewidth=2)
@@ -167,6 +171,29 @@ def metric_bars(ax, table, metric: str = "auroc", colors: ColorMap | None = None
     ax.set_yticks(y, table["score"])
     ax.grid(axis="y", visible=False)
     ax.set_xlabel(metric.upper())
+
+
+def subset_bars(table, metric: str = "auroc", colors: ColorMap | None = None,
+                ci: tuple[str, str] | None = ("auroc_ci_low", "auroc_ci_high"),
+                chance: float | None = 0.5, title: str = "",
+                panel_width: float = 3.3, height: float = 2.9):
+    """
+    One metric_bars panel per subset, "all" first. Only the first panel
+    prints method names, so every panel keeps the order of "all".
+    """
+    plt = setup(headless=True)
+    subsets = ["all"] + sorted(s for s in table["subset"].unique() if s != "all")
+    order = table[table["subset"] == "all"].sort_values(metric)["score"].tolist()
+    fig, axes = plt.subplots(1, len(subsets), figsize=(panel_width * len(subsets), height),
+                             sharex=True, squeeze=False)
+    for ax, subset in zip(axes[0], subsets):
+        metric_bars(ax, table[table["subset"] == subset], metric, colors, ci, chance, order)
+        ax.set_title(subset)
+        if ax is not axes[0][0]:
+            ax.set_yticklabels([])
+    fig.suptitle(title, fontweight="bold")
+    fig.tight_layout()
+    return fig
 
 
 def save(fig, path: Path):

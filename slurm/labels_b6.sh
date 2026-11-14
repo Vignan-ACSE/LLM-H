@@ -26,7 +26,7 @@ echo "== B6 started at $(date)"
 if srun python scripts/b6_logprob_baseline.py; then
     echo "== B6 finished at $(date)"
 else
-    echo "[WARNING] B6 failed (see .err log); resubmit later with: sbatch slurm/b6.sbatch"
+    echo "[WARNING] B6 failed (see .err log); resubmit later with: sbatch slurm/b6.sh"
 fi
 
 job_done

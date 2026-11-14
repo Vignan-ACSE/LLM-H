@@ -26,7 +26,6 @@ import html
 import json
 import re
 import shutil
-import subprocess
 import sys
 from pathlib import Path
 
@@ -150,14 +149,6 @@ def auroc(values, labels) -> float:
 
 def slug(text: str) -> str:
     return re.sub(r"[^a-z0-9]+", "_", text.lower()).strip("_")
-
-
-def last_commit_time(path: Path) -> int:
-    out = subprocess.run(
-        ["git", "log", "-1", "--format=%ct", "--", str(path)],
-        cwd=PROJECT_ROOT, capture_output=True, text=True,
-    ).stdout.strip()
-    return int(out) if out else 0
 
 
 # Tables
@@ -329,6 +320,45 @@ def copy_figures(out: Path) -> int:
     return count + 1
 
 
+def redraw_subset_figures(out: Path) -> None:
+    """
+    Redraw the per-subset bar charts from the saved metrics, over the copies.
+    B4-B6 runs before the plots.subset_bars fix sorted each panel on its own
+    while only the first panel printed method names.
+    """
+    from scripts.b4_semantic_entropy import DISPLAY as B4_NAMES
+    from scripts.b5_se_probes import COMPARE as B5_NAMES
+    from scripts.b6_logprob_baseline import SCORES as B6_NAMES
+    from src.eval import plots
+
+    b4 = pd.read_csv(DATA_DIR / "b4" / "metrics.csv")
+    main = [m for m in ("semantic_entropy", "discrete_semantic_entropy", "naive_entropy", "n_clusters")
+            if m in set(b4["score"])]
+    b4 = b4[b4["score"].isin(main)].assign(score=lambda f: f["score"].map(B4_NAMES))
+    colors = plots.ColorMap([B4_NAMES[m] for m in main])
+    for metric, chance in (("auroc", 0.5), ("aurac", None)):
+        fig = plots.subset_bars(
+            b4, metric, colors,
+            ci=("auroc_ci_low", "auroc_ci_high") if metric == "auroc" else None,
+            chance=chance, title=f"B4 {metric.upper()} by subset",
+        )
+        plots.save(fig, out / f"b4_{metric}_by_subset.png")
+
+    b5 = pd.read_csv(DATA_DIR / "b5" / "comparison_metrics.csv")
+    names = [n for n in B5_NAMES.values() if n in set(b5["score"])]
+    fig = plots.subset_bars(
+        b5[b5["score"].isin(names)], "auroc", plots.ColorMap(names),
+        title="AUROC for hallucination: probes vs sampling-based SE",
+        panel_width=3.4, height=0.42 * len(names) + 1.2,
+    )
+    plots.save(fig, out / "b5_comparison_auroc.png")
+
+    b6 = pd.read_csv(DATA_DIR / "b6" / "metrics.csv").assign(score=lambda f: f["score"].map(B6_NAMES))
+    fig = plots.subset_bars(b6, "auroc", plots.ColorMap(list(B6_NAMES.values())),
+                            title="B6 AUROC by subset", height=2.6)
+    plots.save(fig, out / "b6_auroc_by_subset.png")
+
+
 def notebook_figures(notebook: dict, out: Path) -> int:
     """Each figure is named after the notebook section it sits in."""
     section, count = "start", 0
@@ -388,13 +418,6 @@ def run_checks(labels: pd.DataFrame, detectors: pd.DataFrame) -> list[tuple[str,
     summaries = main.loc[main["subset"] == "summarization", "prompt"]
     has_document = summaries.str.contains("\n\n", regex=False).mean()
     check(has_document == 1, "Summarization prompts include the document", f"{has_document:.1%}")
-
-    stale = [
-        name for name in ("hidden_states.zip", "token_features.zip")
-        if last_commit_time(DATA_DIR / "a3" / name) < last_commit_time(MAIN_ANSWERS_PATH)
-    ]
-    check(not stale, "A3 zips match the current answers",
-          "older than the answers: " + ", ".join(stale) if stale else "up to date", "WARN")
     return checks
 
 
@@ -505,6 +528,7 @@ def main():
     )
 
     n_figures = copy_figures(figures_dir) + notebook_figures(notebook, figures_dir)
+    redraw_subset_figures(figures_dir)
 
     per_answer_scores(labels).to_parquet(scores_dir / "per_answer_scores.parquet", index=False)
 

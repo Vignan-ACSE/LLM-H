@@ -356,16 +356,10 @@ def make_figures(metrics, out_scores, labels, b4_path, out_dir):
     frame, names = comparison_frame(out_scores, b4_path)
     table = evaluate_scores(frame, labels, names)
     colors = plots.ColorMap(names)
-    subsets = ["all"] + sorted(s for s in table["subset"].unique() if s != "all")
-    fig, axes = plt.subplots(1, len(subsets), figsize=(3.4 * len(subsets), 0.42 * len(names) + 1.2),
-                             sharex=True, squeeze=False)
-    for ax, s in zip(axes[0], subsets):
-        plots.metric_bars(ax, table[table["subset"] == s], "auroc", colors)
-        ax.set_title(s)
-        if ax is not axes[0][0]:
-            ax.set_yticklabels([])
-    fig.suptitle("AUROC for hallucination: probes vs sampling-based SE", fontweight="bold")
-    fig.tight_layout()
+    fig = plots.subset_bars(
+        table, "auroc", colors, title="AUROC for hallucination: probes vs sampling-based SE",
+        panel_width=3.4, height=0.42 * len(names) + 1.2,
+    )
     plots.save(fig, out_dir / "comparison_auroc.png")
     plt.close(fig)
 

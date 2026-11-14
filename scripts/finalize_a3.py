@@ -28,7 +28,7 @@ FEATURE_DIR = A3_DIR / "token_features"
 HIDDEN_DIR = A3_DIR / "hidden_states"
 
 MANIFEST_PATH = A3_DIR / "a3_manifest.json"
-REPORT_PATH = Path("a3_extraction_report.md")
+REPORT_PATH = Path("data/a3_extraction_report.md")
 
 REQUIRED_COLUMNS = {
     "uid",

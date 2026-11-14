@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from src.eval import plots
 from src.eval.metrics import (
     aurac,
     evaluate_scores,
@@ -113,3 +114,19 @@ def test_greybox_scores_align_tokens_to_sentences():
     assert out["greybox_aligned"]
     assert out["greybox_avg_neg_logprob"] == pytest.approx(2.0)
     assert out["greybox_max_entropy"] == pytest.approx(1.0)
+
+
+# ---------------------------------------------------------------------------
+# Plots
+# ---------------------------------------------------------------------------
+
+def test_subset_bars_keep_the_same_method_order_in_every_panel():
+    table = pd.DataFrame({
+        "subset": ["all", "all", "qa", "qa"],
+        "score": ["good", "bad", "good", "bad"],
+        "auroc": [0.8, 0.6, 0.2, 0.9],
+    })
+    fig = plots.subset_bars(table, ci=None)
+    all_panel, qa_panel = fig.axes
+    assert [t.get_text() for t in all_panel.get_yticklabels()] == ["bad", "good"]
+    assert [bar.get_width() for bar in qa_panel.patches] == pytest.approx([0.9, 0.2])

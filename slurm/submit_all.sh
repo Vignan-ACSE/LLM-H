@@ -75,10 +75,10 @@ submit() {
     printf -v "$var" "%s" "$id"
 }
 
-submit labels slurm/labels_b6.sbatch
-submit b3 --dependency=afterok:$labels slurm/b3.sbatch
-submit b4 --dependency=afterok:$labels slurm/b4.sbatch
-submit b5 --dependency=afterok:$b4 slurm/b5.sbatch
+submit labels slurm/labels_b6.sh
+submit b3 --dependency=afterok:$labels slurm/b3.sh
+submit b4 --dependency=afterok:$labels slurm/b4.sh
+submit b5 --dependency=afterok:$b4 slurm/b5.sh
 
 record="logs/submitted_$(date +%Y%m%d_%H%M%S).txt"
 {

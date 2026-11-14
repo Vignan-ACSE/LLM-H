@@ -22,7 +22,7 @@ need_file data/processed/b1_answer_features.parquet "run scripts/b1_features.py 
 if ls data/a3/token_features/part_*.parquet >/dev/null 2>&1; then
     ok "data/a3/token_features/ ($(ls data/a3/token_features/part_*.parquet | wc -l) shards)"
 else
-    warn "data/a3/token_features/ empty -- B3 grey-box baselines will be skipped (unzip data/a3/token_features.zip)"
+    warn "data/a3/token_features/ empty -- B3 grey-box baselines will be skipped (rerun src/extract_features/extract_token_features.py)"
 fi
 
 echo "Models (download on the login node: python scripts/download_signal_models.py)"
