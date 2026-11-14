@@ -1,0 +1,45 @@
+{
+  "targets": [
+    0.9,
+    0.95
+  ],
+  "fractions": [
+    0.4,
+    0.3,
+    0.3
+  ],
+  "seed": 42,
+  "git_commit_sha": "b54583561c79e6ee23d8e16c2f868f425f0608f7",
+  "labels": "provisional",
+  "size_repeats": 200,
+  "sizes": [
+    "10",
+    "20",
+    "50",
+    "100",
+    "200",
+    "500",
+    "1000",
+    "2000",
+    "5514"
+  ],
+  "scores": [
+    "selfcheck_nli",
+    "match_count",
+    "match_count_nonstrict",
+    "semantic_entropy",
+    "naive_entropy",
+    "b8_gradient_boosting",
+    "b8_logistic_regression",
+    "logprob_neg_mean",
+    "accprobe_tbg"
+  ],
+  "split": {
+    "near_dup": true,
+    "sim_threshold": 0.9,
+    "n_groups_exact": 21225,
+    "n_groups_after_merge": 21105,
+    "n_near_dup_pairs": 127,
+    "largest_group": 4
+  }
+}
