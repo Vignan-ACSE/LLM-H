@@ -1,4 +1,4 @@
-# Sourced by every slurm/*.sbatch job. Not meant to be run directly.
+# Sourced by every slurm/*.sh job. Not meant to be run directly.
 #
 # Jobs must be submitted from the repository root (slurm/submit_all.sh
 # does this for you), because SLURM_SUBMIT_DIR is used as the project dir.

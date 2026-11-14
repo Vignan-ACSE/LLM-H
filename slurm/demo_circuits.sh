@@ -17,7 +17,7 @@
 # Output: demo/circuit_examples.json
 #
 # Hand-pick examples instead of the automatic selection:
-#   sbatch --export=ALL,DEMO_UIDS="halueval-qa-00012 halueval-qa-00440" slurm/demo_circuits.sbatch
+#   sbatch --export=ALL,DEMO_UIDS="halueval-qa-00012 halueval-qa-00440" slurm/demo_circuits.sh
 
 source "${SLURM_SUBMIT_DIR:-.}/slurm/env.sh"
 

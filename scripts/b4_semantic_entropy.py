@@ -168,18 +168,12 @@ def make_figures(scores, labels, metrics, sweep, out_dir):
     # 1. AUROC / AURAC bars, all subsets and per subset
     overall = metrics[metrics["score"].isin(main)].copy()
     overall["score"] = overall["score"].map(DISPLAY)
-    subsets = ["all"] + sorted(s for s in overall["subset"].unique() if s != "all")
     for metric, chance in [("auroc", 0.5), ("aurac", None)]:
-        fig, axes = plt.subplots(1, len(subsets), figsize=(3.3 * len(subsets), 2.9), sharex=True, squeeze=False)
-        for ax, s in zip(axes[0], subsets):
-            plots.metric_bars(ax, overall[overall["subset"] == s], metric, colors,
-                              ci=("auroc_ci_low", "auroc_ci_high") if metric == "auroc" else None,
-                              chance=chance)
-            ax.set_title(s)
-            if ax is not axes[0][0]:
-                ax.set_yticklabels([])
-        fig.suptitle(f"B4 {metric.upper()} by subset", fontweight="bold")
-        fig.tight_layout()
+        fig = plots.subset_bars(
+            overall, metric, colors,
+            ci=("auroc_ci_low", "auroc_ci_high") if metric == "auroc" else None,
+            chance=chance, title=f"B4 {metric.upper()} by subset",
+        )
         plots.save(fig, out_dir / f"{metric}_by_subset.png")
         plt.close(fig)
 

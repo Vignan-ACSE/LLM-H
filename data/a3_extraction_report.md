@@ -4,7 +4,7 @@
 
 - Expected examples: 24,652
 - Extracted examples: 24,652
-- Token-feature rows: 2,016,270
+- Token-feature rows: 2,665,305
 - Feature Parquet shards: 247
 - Hidden-state files: 24,652
 - Hidden size: 896

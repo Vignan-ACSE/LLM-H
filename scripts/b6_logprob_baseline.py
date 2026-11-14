@@ -149,15 +149,7 @@ def make_figures(frame: pd.DataFrame, metrics: pd.DataFrame, thresholds: pd.Data
     # 2. AUROC per subset
     table = metrics.copy()
     table["score"] = table["score"].map(SCORES)
-    subsets = ["all"] + sorted(s for s in table["subset"].unique() if s != "all")
-    fig, axes = plt.subplots(1, len(subsets), figsize=(3.3 * len(subsets), 2.6), sharex=True, squeeze=False)
-    for ax, s in zip(axes[0], subsets):
-        plots.metric_bars(ax, table[table["subset"] == s], "auroc", colors)
-        ax.set_title(s)
-        if ax is not axes[0][0]:
-            ax.set_yticklabels([])
-    fig.suptitle("B6 AUROC by subset", fontweight="bold")
-    fig.tight_layout()
+    fig = plots.subset_bars(table, "auroc", colors, title="B6 AUROC by subset", height=2.6)
     plots.save(fig, out_dir / "auroc_by_subset.png")
     plt.close(fig)
 
