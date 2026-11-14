@@ -160,3 +160,21 @@ sbatch slurm/b7_b8_b9.sh
 
 The original generation files and the old resumable folders are kept in
 `data/pre_regen/`.
+
+## Block C (C4 to C8)
+
+`slurm/c_block.sh` runs the C1 to C3 tests, then `scripts/run_calibration.py`, then
+`scripts/collect_results.py`. C4 uses SelfCheck-NLI only if B3 has saved
+`data/b3/selfcheck_scores.parquet`, so run B3 first.
+
+Quick check on 5 splits (writes to `data/c_test/`, which git ignores):
+
+```bash
+sbatch --export=ALL,LIMIT=1 slurm/c_block.sh
+```
+
+Full run, after B3:
+
+```bash
+b3=$(sbatch --parsable slurm/b3.sh) && sbatch --dependency=afterok:$b3 --kill-on-invalid-dep=yes slurm/c_block.sh
+```

@@ -47,6 +47,9 @@ data/b9/shards/
 data/extra15_shards/
 data/summarization_regen/
 data/pre_regen/
+data/c6/trials.parquet
+data/c7/trials.parquet
+data/c_test/
 *.pt
 *.npz
 *.tmp

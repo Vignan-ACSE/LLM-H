@@ -1,0 +1,34 @@
+{
+  "targets": [
+    0.9,
+    0.95
+  ],
+  "fractions": [
+    0.4,
+    0.3,
+    0.3
+  ],
+  "seed": 42,
+  "git_commit_sha": "b54583561c79e6ee23d8e16c2f868f425f0608f7",
+  "labels": "provisional",
+  "family": "single-pass",
+  "scores": [
+    "accprobe_tbg",
+    "b8_gradient_boosting",
+    "b8_logistic_regression",
+    "logprob_neg_mean"
+  ],
+  "split": {
+    "near_dup": true,
+    "sim_threshold": 0.9,
+    "n_groups_exact": 21225,
+    "n_groups_after_merge": 21105,
+    "n_near_dup_pairs": 127,
+    "largest_group": 4
+  },
+  "rows_per_part": {
+    "fit": 8491,
+    "calibrate": 6366,
+    "eval": 6368
+  }
+}

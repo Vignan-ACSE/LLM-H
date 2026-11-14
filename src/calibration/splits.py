@@ -40,6 +40,8 @@ Rows with a missing label (e.g. refusals) must be dropped before splitting.
 
 from __future__ import annotations
 
+import warnings
+
 import numpy as np
 import pandas as pd
 
@@ -212,9 +214,13 @@ def make_splits(
     strat = out[stratify_col].astype(str) + "|" + out[label_col].astype(str)
     splitter = StratifiedGroupKFold(n_splits=n_folds, shuffle=True, random_state=seed)
     fold_of_row = np.full(len(out), -1)
-    for fold, (_, test_idx) in enumerate(
-            splitter.split(out, strat, groups=out["group_id"])):
-        fold_of_row[test_idx] = fold
+    # A stratum smaller than n_folds just cannot be spread over every fold;
+    # the positives-per-part check below catches the case that matters.
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore", message="The least populated class in y")
+        for fold, (_, test_idx) in enumerate(
+                splitter.split(out, strat, groups=out["group_id"])):
+            fold_of_row[test_idx] = fold
     part_of_fold = np.repeat(np.array(PART_NAMES), fold_counts)
     out["split"] = part_of_fold[fold_of_row]
 

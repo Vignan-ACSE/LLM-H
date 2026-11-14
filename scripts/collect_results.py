@@ -60,6 +60,8 @@ B3_TABLES = [
     ("n_pairs = int(", ["b3_compute_cost"]),
 ]
 
+CALIBRATION_STEPS = ("c4", "c5", "c6", "c7", "c8")
+
 # Files that are already results: (source under data/, name in tables/)
 COPIED_TABLES = [
     ("b4/budget_sweep.csv", "b4_budget_sweep.csv"),
@@ -306,7 +308,26 @@ def per_answer_scores(labels: pd.DataFrame) -> pd.DataFrame:
         DATA_DIR / "b8" / "validation_predictions.parquet",
         columns=["uid", "logistic_regression_probability", "gradient_boosting_probability"],
     )
-    return frame.merge(b8, on="uid", how="left").sort_values("uid", kind="stable")
+    frame = frame.merge(b8, on="uid", how="left")
+
+    b3 = DATA_DIR / "b3" / "selfcheck_scores.parquet"
+    if b3.exists():
+        selfcheck = pd.read_parquet(b3).drop(columns=["subset", "hallucinated"], errors="ignore")
+        frame = frame.merge(selfcheck, on="uid", how="left")
+    return frame.sort_values("uid", kind="stable")
+
+
+def copy_calibration(tables_dir: Path, figures_dir: Path) -> int:
+    """Block C outputs (scripts/run_calibration.py), when they exist."""
+    count = 0
+    for step in CALIBRATION_STEPS:
+        folder = DATA_DIR / step
+        for path in sorted(folder.glob("*.csv")):
+            shutil.copy2(path, tables_dir / f"{step}_{path.name}")
+        for path in sorted((folder / "figures").glob("*.png")):
+            shutil.copy2(path, figures_dir / f"{step}_{path.name}")
+            count += 1
+    return count
 
 
 # Figures
@@ -428,6 +449,34 @@ def auroc_summary(detectors: pd.DataFrame) -> pd.DataFrame:
     return table.reset_index()
 
 
+def calibration_sections() -> list[str]:
+    """README sections for Block C, empty until scripts/run_calibration.py has run."""
+    c6_path, c8_path = DATA_DIR / "c6" / "summary.csv", DATA_DIR / "c8" / "summary.csv"
+    if not c6_path.exists():
+        return []
+    columns = ["score", "family", "target_recall", "mean_recall", "sd_recall",
+               "frac_below_target", "mean_flag_rate", "mean_accepted_hallucination_rate"]
+    c6 = pd.read_csv(c6_path)
+    c6 = c6[(c6["calibrate_on"] == "all") & (c6["evaluate_on"] == "all")][columns]
+    sections = [
+        "## Calibration (C4 to C8)",
+        "Tau is set with the C1 threshold on the calibrate part and measured on the eval part "
+        f"of {int(pd.read_csv(c6_path)['trials'].iloc[0])} grouped splits. The guarantee is on "
+        "mean recall, so some splits landing below target is expected. Details are in "
+        "`tables/c4_*` to `tables/c8_*`.",
+        markdown_table(c6),
+    ]
+    if c8_path.exists():
+        c8 = pd.read_csv(c8_path)
+        c8 = c8[c8["calibrate_on"].str.startswith("not ") & (c8["target_recall"] == 0.95)]
+        c8 = c8[["score", "evaluate_on", "mean_recall", "sd_recall", "mean_flag_rate"]]
+        sections += [
+            "### Calibrate on three subsets, evaluate on the fourth (C8, 95% target)",
+            markdown_table(c8),
+        ]
+    return sections
+
+
 def write_readme(out: Path, tables: dict, detectors: pd.DataFrame, checks: list, counts: dict):
     b6 = tables["b6_threshold_summary"]
     b6 = b6[b6["score"] == "logprob_neg_mean"]
@@ -479,11 +528,16 @@ def write_readme(out: Path, tables: dict, detectors: pd.DataFrame, checks: list,
         markdown_table(features),
         "## Gradient boosting importance (B8)",
         markdown_table(importance),
+    ]
+    sections += calibration_sections()
+    has_b3 = (DATA_DIR / "b3" / "selfcheck_scores.parquet").exists()
+    sections += [
         "## Files",
         f"- `tables/`: {counts['tables']} result files\n"
         f"- `figures/`: {counts['figures']} figures\n"
         "- `scores/per_answer_scores.parquet`: label and detector scores per answer, for Block C\n"
-        "- B3 per-answer scores are not included, because the notebook did not save them",
+        + ("- B3 SelfCheck per-answer scores are included" if has_b3 else
+           "- B3 per-answer scores are not included, because the notebook did not save them"),
     ]
     (out / "README.md").write_text("\n\n".join(sections) + "\n", encoding="utf-8")
 
@@ -528,6 +582,7 @@ def main():
     )
 
     n_figures = copy_figures(figures_dir) + notebook_figures(notebook, figures_dir)
+    n_figures += copy_calibration(tables_dir, figures_dir)
     redraw_subset_figures(figures_dir)
 
     per_answer_scores(labels).to_parquet(scores_dir / "per_answer_scores.parquet", index=False)
