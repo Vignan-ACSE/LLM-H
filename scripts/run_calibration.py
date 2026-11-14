@@ -281,7 +281,8 @@ def figure_c8(summary: pd.DataFrame, scores: list[str], out: Path, target: float
     plt = plots.setup(headless=True)
     rows = summary[(summary["target_recall"] == target)
                    & summary["calibrate_on"].isin(SUBSETS) & summary["evaluate_on"].isin(SUBSETS)]
-    fig, axes = plt.subplots(1, len(scores), figsize=(4.6 * len(scores), 4.2), squeeze=False)
+    fig, axes = plt.subplots(1, len(scores), figsize=(4.2 * len(scores) + 1.6, 4.4),
+                             squeeze=False, constrained_layout=True)
     for ax, score in zip(axes[0], scores):
         grid = (rows[rows["score"] == score]
                 .pivot(index="calibrate_on", columns="evaluate_on", values="mean_recall")
@@ -290,8 +291,8 @@ def figure_c8(summary: pd.DataFrame, scores: list[str], out: Path, target: float
         for (i, j), value in np.ndenumerate(grid.to_numpy()):
             ax.text(j, i, f"{value:.2f}", ha="center", va="center", fontsize=9)
         ax.set_xticks(range(len(SUBSETS)), SUBSETS, rotation=30, ha="right")
-        ax.set_yticks(range(len(SUBSETS)), SUBSETS)
-        ax.set(xlabel="evaluate on", ylabel="calibrate on", title=score)
+        ax.set_yticks(range(len(SUBSETS)), SUBSETS if ax is axes[0][0] else [])
+        ax.set(xlabel="evaluate on", ylabel="calibrate on" if ax is axes[0][0] else "", title=score)
         ax.grid(False)
     fig.colorbar(image, ax=axes[0].tolist(), shrink=0.8, label="mean recall")
     fig.suptitle(f"C8: recall at a {target:.0%} target when the subset changes", fontweight="bold")
